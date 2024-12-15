@@ -1,0 +1,1247 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>RoboVLMs: What Matters in Building Vision-Language-Action Models for Generalist Robot Policies</title>
+        <!-- <link rel="icon" type="image/x-icon" href="/static/img/icons/jellyfish.ico"> -->
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Open Graph -->
+        <meta property="og:url" content="https://robovlms.github.io/" />
+        <meta property="og:image" content="https://robovlms.github.io/static/img/preview.png" />
+        <meta property="og:title" content="Towards Generalist Robot Policies: What Matters in Building Vision-Language-Action Models" />
+        <meta property="og:description" content="We conduct a comprehensive empirical study with extensive experiments over different VLA design choices, and introduce a new family of VLAs, RoboVLMs, which have minimal manual designs and achieve a new state-of-the-art performance in three simulation tasks and real-world experiments." />
+        
+        <!-- Twitter -->
+        <meta name="twitter:url" content="https://robovlms.github.io/" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://robovlms.github.io/static/img/preview.png" />
+        <meta name="twitter:title" content="Towards Generalist Robot Policies: What Matters in Building Vision-Language-Action Models" />
+        <meta name="twitter:description" content="We conduct a comprehensive empirical study with extensive experiments over different VLA design choices, and introduce a new family of VLAs, RoboVLMs, which have minimal manual designs and achieve a new state-of-the-art performance in three simulation tasks and real-world experiments." />
+
+        <script src="./static/js/distill_template.v2.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+        <script src="https://rawgit.com/nstrayer/slid3r/master/dist/slid3r.js"></script>
+
+        <script defer="" src="./static/js/hider.js"></script>
+        <script src="./static/js/image_interact.js"></script>
+        <script src="./static/js/switch_videos.js"></script>
+
+        <link rel="stylesheet" href="./static/css/style.css">
+        <link rel="stylesheet" href="./static/css/bulma.min.css">
+        <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"></script>
+        <script defer src="./static/js/fontawesome.all.min.js"></script>
+
+
+        <!-- medium zoom https://github.com/francoischalifour/medium-zoom -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>  <!-- jquery -->
+        <script defer src="./static/js/medium-zoom.min.js"></script>
+        <script defer src="./static/js/zoom.js"></script>
+    </head>
+    <body>
+        <div class="header-wrapper">
+            <div class="header-container" id="header-container">
+                <div class="header-content">
+                    <h1 style="font-family: Font Lato; margin-top: 0px"><i>RoboVLMs</i></h1>
+                    <h2 style="font-family: Font Lato; font-weight: 800;">Towards Generalist Robot Policies: <br>
+                        What Matters in Building Vision-Language-Action Models
+                    </h2>
+                        <p style="font-family: Font Titan;">
+                            Introducing RoboVLMs, a new family of Vision-Language-Action Models for robots, which have minimal manual designs and set new state-of-the-art performance in both simulation tasks and real-world experiments. We provide a comprehensive empirical study with extensive experiments over different <em><strong>VLA design choices</strong></em>:
+                        </p>
+                    
+                        <div class="icon-container">
+                            <div class="icon-item">
+                                <img src="./static/img/icons/visual.svg" alt="Why Icon">
+                                <div><strong>Why</strong> do we want VLAs: We explore the advantages of VLAs in the role of generalist robot policies.</div>
+                            </div>
+                            <div class="icon-item">
+                                <img src="./static/img/icons/recipe.svg" alt="How Icon">
+                                <div><strong>How</strong> should we formulate VLAs: We categorize the structure of VLAs and explore every potential combination of them.</div>
+                            </div>
+                            <div class="icon-item">
+                                <img src="./static/img/icons/connector.svg" alt="Which Icon">
+                                <div><strong>Which</strong> VLM backbone is better for VLAs: We test 8 different VLM backbones to find out the best one to build VLAs.</div>
+                            </div>
+                            <div class="icon-item">
+                                <img src="./static/img/icons/task.svg" alt="When Icon">
+                                <div><strong>When</strong> should we leverage cross-embodiment datasets: We validate if pre-training, co-training, and post-training on cross-embodiment data can improve the performance of VLAs.</div>
+                            </div>
+                        </div>
+                        <br>
+                        <p style="font-family: Font Titan;">
+                            RoboVLMs serves as a <strong>unified platform</strong> to implement VLAs and make fair comparisons. Along with this work, we also open-source the dataset in <strong><a href="https://gr2-manipulation.github.io/" style="color: #deebf8;">ByteDance Robot Benchmark</a></strong> used for training our real-world robot.
+                        </p>
+                        <div class="icon-container">
+                            <div class="icon-item">
+                                <img src="./static/img/icons/eval.svg" alt="Benchmarking Icon">
+                                <div><strong>Benchmarking</strong>: Fine-tune a large and diverse set of existing VLMs into VLAs under different settings and formulations to benchmark their performance.</div>
+                            </div>
+                            <div class="icon-item">
+                                <img src="./static/img/icons/model.svg" alt="Models Icon">
+                                <div><strong>Models</strong>: We open-source the model weights of our strongest VLAs fine-tuned from open-source VLMs.</div>
+                            </div>
+                            <div class="icon-item">
+                                <img src="./static/img/icons/github.svg" alt="Github Icon">
+                                <div><strong>Codebase</strong>: A unified and flexible VLA framework for easy VLMs integration within 30 lines of codes.</div>
+                            </div>
+                            <div class="icon-item">
+                                <img src="./static/img/icons/datasets.svg" alt="Datasets Icon">
+                                <div><strong>Dataset</strong>:  Real-world dataset in ByteDance Robot Benchmark, including 20 tasks and 15K trajectories.</div>
+                            </div>
+                        </div>
+                    <div class="button-container" style="text-align: center;">
+                        <!-- replace arxiv -->
+                        <a href="https://arxiv.org/abs/" class="button paper-link" target="_blank">
+                            <span class="icon is-small">
+                                <i class="ai ai-arxiv"></i>
+                            </span>
+                            arXiv
+                        </a>
+                        <!-- replace pdf -->
+                        <a href="https://arxiv.org/pdf/" class="button paper-link" target="_blank">
+                            <span class="icon is-small">
+                                <i class="fas fa-file-pdf"></i>
+                            </span>
+                            <span>pdf</span>
+                        </a>
+                        <!-- replace image -->
+                        <a href="https://github.com/robovlms/robovlms" class="button" target="_blank">
+                            <span class="icon is-small">
+                                <i class="fab fa-github"></i>
+                            </span>
+                            <span>Codebase</span>
+                        </a>
+                        <!-- <br> -->
+                        <a href="https://huggingface.co/collections/robovlms/" class="button" target="_blank">
+                            <span class="icon is-small">
+                                <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face logo" style="height: 1em;">
+                            </span>
+                            <span>Checkpoints</span>
+                        </a>
+                        <a href="https://huggingface.co/collections/robovlms/" class="button" target="_blank">
+                            <span class="icon is-small">
+                                <i class="fa fa-database"></i>
+                            </span>
+                            <span>Dataset</span>
+                        </a>
+                        <a href="#rollouts" class="button">
+                            <span class="icon is-small">
+                                <i class="fa fa-film"></i>
+                            </span>
+                            <span>Videos</span>
+                        </a>
+                    </div>       
+                </div>
+                <!-- <div class="header-image">
+                    <img draggable="false" src="static/img/robovlms.jpeg" alt="Teaser Image" class="teaser-image" height="500">
+                </div> -->
+            </div>
+        </div>
+    <d-article>
+        <div class="byline" style="font-family: Font Lato; font-weight: 400;">
+            <div class="byline-container">
+                <p>
+                    <a href="https://scholar.google.com/citations?hl=zh-CN&user=laOWyTQAAAAJ" class="author-link" target="_blank">Xinghang Li</a><sup>*</sup> &emsp;
+                    <a href="https://github.com/LPY1219" class="author-link" target="_blank">Peiyan Li</a> &emsp;
+                    <a href="https://minghuanliu.com/" class="author-link" target="_blank">Minghuan Liu</a><sup>*</sup> &emsp;
+                    <a href="" class="author-link" target="_blank">Dong Wang</a> &emsp;
+                    <a href="" class="author-link" target="_blank">Jirong Liu</a> &emsp;
+                    <br>
+                    <a href="https://bingykang.github.io/" class="author-link" target="_blank">Bingyi Kang</a> &emsp;
+                    <a href="https://yusufma03.github.io/" class="author-link" target="_blank">Xiao Ma</a> &emsp;
+                    <a href="https://www.taokong.org/" class="author-link" target="_blank">Tao Kong</a><sup>&dagger;</sup> &emsp;
+                    <a href="https://zhanghanbo.github.io/" class="author-link" target="_blank">Hanbo Zhang</a><sup>*</sup><sup>&dagger;</sup> &emsp;
+                    <a href="https://sites.google.com/site/thuliuhuaping/home" class="author-link" target="_blank">Huaping Liu</a><sup>&dagger;</sup> &emsp;
+                    <p></p>
+                </p>
+                <p style="text-align: center;">Tsinghua University &emsp; ByteDance Research &emsp; CASIA MAIS-NLPR<br></p>
+                Shanghai Jiao Tong University &emsp; National University of Singapore</p>
+                <!-- <p style="text-align: center; font-size: 1.35em; color: red; font-weight: bold;">
+                    <a href="https://neurips.cc/virtual/" target="_blank">NeurIPS 2024 (Oral)</a>
+                </p> -->
+                <p style="text-align: center; margin-bottom: 0;">
+                    <span class="author-note"><sup>*</sup>Project lead</span>&emsp;
+                    <span class="author-note"><sup>&dagger;</sup>Corresponding author</span>
+                </p>
+            </div>
+        </div>
+
+        
+        <p class="text abstract">
+            In recent years, foundation <i>Vision Language Model</i>s (VLMs) have demonstrated strong capabilities in multi-modal representation learning, comprehension, and reasoning. Building vision-language-conditioned robotic policies, i.e., <i>Vision-Language-Action Models</i> (VLAs), have become a natural extension by injecting action components into the VLMs. Existing work has demonstrated the effectiveness and generalization of VLAs in multiple scenarios and tasks. Nevertheless, as existing VLAs differ in their backbones, action-prediction formulations, data distributions, and training recipes, a systematic understanding of the design choices of VLAs remains a missing piece of the VLA research.
+            In this work, we conduct a comprehensive empirical study with extensive experiments over different VLA design choices, and introduce a new family of VLAs, <i>RoboVLMs</i>, which have minimal manual designs and achieve a new state-of-the-art performance in three simulation tasks and real-world experiments.
+        </p>
+
+        <!-- <hr> -->
+
+        <d-figure id="fig-comparison" >
+            <figure>
+                <img data-zoomable="" draggable="false" src="static/img/robovlms.jpeg" alt="key problems">
+                <!-- <figcaption>
+                    RoboVLMs mainly considers four questions for building VLAs based on VLMs: <strong>Why</strong> use VLMs-based VLAs; <strong>Which</strong> backbone to use; <strong>How</strong> to formulate the VLAs; and <strong>When</strong> to use cross-embodiment data as an extra data source.
+                </figcaption> -->
+            </figure>
+        </d-figure>
+        </div>
+        
+        <div id="illustration" class="sub-section"></div>
+            <h1 class="text">Four Key Problems for VLAs</h1>
+            <p class="text">
+                RoboVLMs explore the advantages of VLAs for generalist robot policies, and focus on the following 4 questions:
+            </p>
+            <p class="text"> 
+                <!-- <p style="margin-top: 1%;"> -->
+                &#x1F449;<span style="color: blue;"><a href="#why"><strong>Why</a> do we want VLAs?</strong></span>&nbsp; We explore the advantages of VLAs over other generalist robot policies. <br>
+                &#x1F449;<span style="color: blue;"><a href="#which"><strong>Which</a> backbone to select?</strong></span>&nbsp; We explore 8 different VLM backbones and provide insights to select the optimal one for your tasks.<br>
+                &#x1F449;<span style="color: blue;"><a href="#how"><strong>How</a> to formulate?</strong></span>&nbsp; We categorize the structure of varying VLAs and explore every potential combination of them.<br>
+                &#x1F449;<span style="color: blue;"><a href="#when"><strong>When</a> to add cross-embodiment data?</strong></span>&nbsp; We empirically investigated potential benefits from large-scale cross-embodiment datasets.</li>
+            </p>
+
+        <!-- <hr> -->
+
+        <div id="benchmarks" class="sub-section">
+            <h1 class="text">Simulation and Real Benchmarks</h1>
+                <p class="text">
+                    To comprehensively evaluate the performance of VLAs, in this work, we benchmark all models on a diverse set of benchmarks and robotic manipulation tasks in both simulation and the real world.
+                    We choose two well-known and widely used simulation benchmarks, <strong><a href="https://calvin.cs.uni-freiburg.de/">CALVIN</a></strong>, <strong><a href="https://simpler-env.github.io/">SimplerEnv</a></strong>, and a real-world robot manipulation benchmark, <strong><a href="https://gr2-manipulation.github.io/">ByteDance Robot Benchmark</a></strong>.
+                </p>
+
+                <d-figure id="fig-cvcb" >
+                    <figure>
+                        <img data-zoomable="" draggable="false" src="static/img/exps_setup.png" alt="benchmark category">
+                        <figcaption>
+                            Two simulative and one real-world benchmarks. We show environment setups and example tasks involved.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+
+        </div>
+
+        <!-- <hr> -->
+
+        <div id="taxnomy" class="sub-section">
+            <h1 class="text">Categorization of VLAs</h1>
+            <div class="columns interpolation-panel"> 
+                <div class="column" style="margin-left: 20px; margin-right: 20px;"> 
+                    Although the rigorous definition of VLAs is not consistent in different works, we regard <i><strong>VLAs are the models fine-tuned from pre-trained VLMs</strong></i>. 
+                </div>
+            </div>
+                <p class="text">
+                    We categorize VLA structures based on two primary designs: 1) <i>INPUT</i> whether the history is observable (horizontal axis); 2) <i>OUTPUT</i>: whether action is continuous or discrete (vertical axis).
+                </p>
+
+                <d-figure id="fig-cvcb" >
+                    <figure>
+                        <img data-zoomable="" draggable="false" src="static/img/exist_works_year.png" alt="benchmark category">
+                        <figcaption>
+                            The categorization of VLAs and existing generalist policies.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+
+        </div>
+
+        <!-- <hr> -->
+
+        <!-- <div id="framework" class="sub-section">
+            <h1 class="text">A Unified VLA Framework</h1>
+            <p class="text">
+                Through over 600 distinct designed experiments, RoboVLMs include over 8 VLM backbones, 4 policy architectures, and provide a detailed guidebook for the future design of VLAs.
+            </p>
+
+                <d-figure id="fig-cvcb" >
+                    <figure>
+                        <img data-zoomable="" draggable="false" src="static/img/robovlms.png" alt="robovlms">
+                        <figcaption>
+                            RoboVLMs provides a unified framework to fine-tune VLMs into VLAs.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+
+        </div> -->
+
+        <!-- <hr> -->
+
+        <div id="why" class="sub-section">
+            <h1 class="text">&#x1F449;Why do we want VLAs?</h1>
+            <!-- <h2 class="text">Simulation Performances</h2> -->
+            
+            <hr>
+            <p class="text", style="margin-top: 0%;">
+                <strong>&#128269;<i>Question 1</i></strong> &nbsp; Are VLAs a good choice for building generalist robot policies?
+    
+                <ul class="text" style="margin-top: 0%; padding-left: 3%;">
+                    <li style="margin-bottom: 0;"><strong>&#128204;<i>Finding 1</i></strong> &nbsp; VLA is the best choice in our extensive experiments to build generalist robot policies, in terms of robustness, generalization, and data efficiency. </li>
+                </ul>
+            </p>
+            <hr>
+             
+                <p class="text">
+                    <strong>Performance on CALVIN</strong> shows the state-of-the-art performance of the best VLA (KosMos P.H.) built by RoboVLMs.
+                </p>
+
+                <div id="tab:model_ensemble" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center;">Method</th>
+                                    <th style="text-align: center;">VLA?</th>
+                                    <th style="text-align: center;">Train</th>
+                                    <th style="text-align: center;">1</th>
+                                    <th style="text-align: center;">2</th>
+                                    <th style="text-align: center;">3</th>
+                                    <th style="text-align: center;">4</th>
+                                    <th style="text-align: center;">5</th>
+                                    <th style="text-align: center;">Avg. Len.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>MCIL</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABCD</td>
+                                    <td>0.373</td>
+                                    <td>0.027</td>
+                                    <td>0.002</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.40</td>
+                                </tr>
+                                <tr>
+                                    <td>R3M (Frozen)</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABCD</td>
+                                    <td>0.085</td>
+                                    <td>0.005</td>
+                                    <td>0.001</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.10</td>
+                                </tr>
+                                <tr>
+                                    <td>Voltron (Frozen)</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABCD</td>
+                                    <td>0.101</td>
+                                    <td>0.003</td>
+                                    <td>0.001</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.11</td>
+                                </tr>
+                                <tr>
+                                    <td>Voltron (Fine-tuned)</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABCD</td>
+                                    <td>0.837</td>
+                                    <td>0.566</td>
+                                    <td>0.352</td>
+                                    <td>0.208</td>
+                                    <td>0.115</td>
+                                    <td>2.08</td>
+                                </tr>
+                                <tr>
+                                    <td>RT-1</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABCD</td>
+                                    <td>0.844</td>
+                                    <td>0.617</td>
+                                    <td>0.438</td>
+                                    <td>0.323</td>
+                                    <td>0.227</td>
+                                    <td>2.45</td>
+                                </tr>
+                                <tr>
+                                    <td>HULC</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABCD</td>
+                                    <td>0.889</td>
+                                    <td>0.733</td>
+                                    <td>0.587</td>
+                                    <td>0.475</td>
+                                    <td>0.383</td>
+                                    <td>3.06</td>
+                                </tr>
+                                <tr>
+                                    <td>GR-1</td>
+                                    <td>&#x2714;</td>
+                                    <td>ABCD</td>
+                                    <td>0.949</td>
+                                    <td>0.896</td>
+                                    <td>0.844</td>
+                                    <td>0.789</td>
+                                    <td>0.731</td>
+                                    <td>4.21</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos P.H. (RoboVLMs)</td>
+                                    <td>&#x2714;</td>
+                                    <td>ABCD</td>
+                                    <td>0.967</td>
+                                    <td>0.930</td>
+                                    <td>0.899</td>
+                                    <td>0.865</td>
+                                    <td>0.826</td>
+                                    <td>4.49</td>
+                                </tr>
+                                <tr>
+                                    <td>MCIL</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABC</td>
+                                    <td>0.304</td>
+                                    <td>0.013</td>
+                                    <td>0.002</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.31</td>
+                                </tr>
+                                <tr>
+                                    <td>Voltron (Frozen)</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABC</td>
+                                    <td>0.026</td>
+                                    <td>0.001</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.03</td>
+                                </tr>
+                                <tr>
+                                    <td>Voltron (Fine-tuned)</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABC</td>
+                                    <td>0.569</td>
+                                    <td>0.272</td>
+                                    <td>0.105</td>
+                                    <td>0.038</td>
+                                    <td>0.014</td>
+                                    <td>1.00</td>
+                                </tr>
+                                <tr>
+                                    <td>RT-1</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABC</td>
+                                    <td>0.533</td>
+                                    <td>0.222</td>
+                                    <td>0.094</td>
+                                    <td>0.038</td>
+                                    <td>0.013</td>
+                                    <td>0.90</td>
+                                </tr>
+                                <tr>
+                                    <td>HULC</td>
+                                    <td>&#x2716;</td>
+                                    <td>ABC</td>
+                                    <td>0.418</td>
+                                    <td>0.165</td>
+                                    <td>0.057</td>
+                                    <td>0.019</td>
+                                    <td>0.011</td>
+                                    <td>0.67</td>
+                                </tr>
+                                <tr>
+                                    <td>GR-1</td>
+                                    <td>&#x2714;</td>
+                                    <td>ABC</td>
+                                    <td>0.854</td>
+                                    <td>0.712</td>
+                                    <td>0.596</td>
+                                    <td>0.497</td>
+                                    <td>0.401</td>
+                                    <td>3.06</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos P.H. (RoboVLMs)</td>
+                                    <td>&#x2714;</td>
+                                    <td>ABC</td>
+                                    <td><strong>0.980</strong></td>
+                                    <td><strong>0.936</strong></td>
+                                    <td><strong>0.854</strong></td>
+                                    <td><strong>0.778</strong></td>
+                                    <td><strong>0.704</strong></td>
+                                    <td><strong>4.25</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>                        
+                    </div>
+                    <!-- <figcaption style="text-align: center; width: 140%;">
+                        Simulation performances on <strong>CALVIN</strong> benchmark, all models are trained on split ABCD/ABC, and evaluated on split D. Results are reported with the best-behaved model checkpoints.
+                    </figcaption> -->
+                </div>
+
+                <p class="text">
+                    On <strong>SimplerEnv</strong>, our model achieves the highest average performance on both <i>WidowX + Bridge</i> and <i></i>Google Robot environments</i>, demonstrating the general effectiveness and robustness against different settings and diverse manipulation tasks.
+                </p>
+                <d-figure id="fig-simpler_eval">
+                    <figure>
+                        <img data-zoomable="" draggable="false" src="static/img/simpler_hist_avg.png" alt="Simpler Simulation Evaluation" style="width: 70%; margin-left: auto; margin-right: auto; display: block;">
+                        <figcaption>
+                            Evaluation results on the <strong>SimplerEnv</strong> simulation benchmarks.
+                            <!-- , including the WidowX+Bridge and Google Robot environments. The performance of RoboVLMs is evaluated with the model in the best VLA formulation investigated, which is trained over fixed training steps.  -->
+                        </figcaption>
+                    </figure>
+                </d-figure>
+            <p class="text">
+                We investigated the impact of vision-language pre-training on the <strong>generalization</strong> and <strong>data efficiently</strong>.
+                Vision-language pre-training is essential for both of them since an aligned vision-language representation provides a robust foundation for visual understanding, enabling the policy to focus on learning manipulation skills.
+                </p>
+                <d-figure id="fig-simpler_eval">
+                    <figure>
+                        <img data-zoomable="" draggable="false" src="static/img/calvin_novl_avg_len_comparison.png" alt="Simpler Simulation Evaluation" style="width: 70%; margin-left: auto; margin-right: auto; display: block;">
+                        <figcaption>
+                            Ablation study of VLAs for vision-language pre-trainining.
+                            <!--  on different settings of the <strong>CALVIN</strong> benchmark. ''P.H." denotes policy head. ''No VL" suggests models without VL pre-training. ''5x" represents training with 5x re-generated training data. -->
+                        </figcaption>
+                    </figure>
+                </d-figure>
+            
+            <hr>
+            <p class="text", style="margin-top: 0%;">
+                <strong>&#128269;<i>Question 2</i></strong> &nbsp; How do VLAs from RoboVLMs perform in real-world scenarios?
+    
+                <ul class="text" style="margin-top: 0%; padding-left: 3%;">
+                    <li style="margin-bottom: 0;"><strong>&#128204;<i>Finding 2</i></strong> &nbsp; The best VLA built on RoboVLMs appears strong effectiveness and robustness in real-robot tasks, especially under unseen settings. </li>
+                </ul>
+            </p>
+            <hr>
+                <p class="text">
+                    The best VLA built on RoboVLMs achieve the best performance in all <strong>real-world</strong> evaluation setups, extremely on <i>Simple</i> and <i>Unseen Background</i>, demonstrating their effectiveness and generalization ability.
+                </p>
+                <d-figure id="fig-simpler_eval">
+                    <figure>
+                        <img data-zoomable="" draggable="false" src="static/img/real_hist.png" alt="Real-robot Evaluation" style="width: 85%;">
+                        <figcaption>
+                            Real-robot performance of our best VLA (KosMos P.H.) built with RoboVLMs against baselines.
+                            <!--  over different settings. RoboVLM outperforms the existing VLAs over all settings, especially for unseen metrics, demonstrating the effectiveness and robustness of our model. -->
+                        </figcaption>
+                    </figure>
+                </d-figure>
+        </div>
+
+        <div id="how" class="sub-section">
+            <h1 class="text">&#x1F449;How should we formulate VLAs?</h1>
+            <hr>
+            <p class="text", style="margin-top: 0%;">
+                <strong>&#128269;<i>Question 3</i></strong> &nbsp; What is the best-performing VLA structure?
+    
+                <ul class="text" style="margin-top: 0%; padding-left: 3%;">
+                    <li style="margin-bottom: 0;"><strong>&#128204;<i>Finding 3</i></strong> &nbsp; The VLA achieves its best performance when using multi-step historical observations as inputs and continuous actions as outputs. For integrating history with continuous action space, the policy head structure performs better. </li>
+                </ul>
+            </p>
+            <hr> 
+            <p class="text">
+                We demonstrate the ablation study of different VLA formulations on <strong>CALVIN</strong> benchmark over the effect of action space, history integration, and history organizing format. The results show significant improvements when taking multi-step historical observations as inputs, continuous actions as outputs, and a policy head to organize history.
+            </p>
+                <div id="tab:model_ensemble" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">Backbone</th>
+                                <th style="text-align: center;">Structure</th>
+                                <th style="text-align: center;">Action Space</th>
+                                <th style="text-align: center;">1</th>
+                                <th style="text-align: center;">2</th>
+                                <th style="text-align: center;">3</th>
+                                <th style="text-align: center;">4</th>
+                                <th style="text-align: center;">5</th>
+                                <th style="text-align: center;">Avg. Len.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- LLaVA -->
+                            <tr>
+                                <td rowspan="4" style="text-align: left;">LLaVA</td>
+                                <td style="font-weight: bold; text-align: right;">One-Step</td>
+                                <td>Disc.</td>
+                                <td>0.809</td>
+                                <td>0.484</td>
+                                <td>0.278</td>
+                                <td>0.175</td>
+                                <td>0.103</td>
+                                <td>1.85</td>
+                            </tr>
+                            <tr>
+                                <td>One-Step</td>
+                                <td>Cont.</td>
+                                <td>0.793</td>
+                                <td>0.592</td>
+                                <td>0.420</td>
+                                <td>0.329</td>
+                                <td>0.235</td>
+                                <td>2.37</td>
+                            </tr>
+                            <tr>
+                                <td>Interleaved</td>
+                                <td>Cont.</td>
+                                <td>0.892</td>
+                                <td>0.645</td>
+                                <td>0.436</td>
+                                <td>0.282</td>
+                                <td>0.181</td>
+                                <td>2.44</td>
+                            </tr>
+                            <tr>
+                                <td>Policy-Head</td>
+                                <td>Cont.</td>
+                                <td>0.873</td>
+                                <td>0.678</td>
+                                <td>0.506</td>
+                                <td>0.376</td>
+                                <td>0.275</td>
+                                <td>2.71</td>
+                            </tr>
+                            <!-- Flamingo -->
+                            <tr>
+                                <td rowspan="3" style="text-align: left;">Flamingo</td>
+                                <td style="font-weight: bold; text-align: right;">One-Step</td>
+                                <td>Disc.</td>
+                                <td>0.681</td>
+                                <td>0.318</td>
+                                <td>0.133</td>
+                                <td>0.062</td>
+                                <td>0.029</td>
+                                <td>1.22</td>
+                            </tr>
+                            <tr>
+                                <td>One-Step</td>
+                                <td>Cont.</td>
+                                <td>0.681</td>
+                                <td>0.354</td>
+                                <td>0.158</td>
+                                <td>0.076</td>
+                                <td>0.035</td>
+                                <td>1.30</td>
+                            </tr>
+                            <tr>
+                                <td>Policy-Head</td>
+                                <td>Cont.</td>
+                                <td>0.964</td>
+                                <td>0.896</td>
+                                <td>0.824</td>
+                                <td>0.740</td>
+                                <td>0.662</td>
+                                <td>4.09</td>
+                            </tr>
+                            <!-- KosMos -->
+                            <tr>
+                                <td rowspan="4" style="text-align: left;">KosMos</td>
+                                <td style="font-weight: bold; text-align: right;">One-Step</td>
+                                <td>Disc.</td>
+                                <td>0.424</td>
+                                <td>0.097</td>
+                                <td>0.023</td>
+                                <td>0.005</td>
+                                <td>0.002</td>
+                                <td>0.55</td>
+                            </tr>
+                            <tr>
+                                <td>One-Step</td>
+                                <td>Cont.</td>
+                                <td>0.881</td>
+                                <td>0.599</td>
+                                <td>0.364</td>
+                                <td>0.221</td>
+                                <td>0.124</td>
+                                <td>2.19</td>
+                            </tr>
+                            <tr>
+                                <td>Interleaved</td>
+                                <td>Cont.</td>
+                                <td>0.987</td>
+                                <td>0.915</td>
+                                <td>0.824</td>
+                                <td>0.737</td>
+                                <td>0.660</td>
+                                <td>4.12</td>
+                            </tr>
+                            <tr>
+                                <td>Policy-Head</td>
+                                <td>Cont.</td>
+                                <td>0.967</td>
+                                <td>0.930</td>
+                                <td>0.899</td>
+                                <td>0.865</td>
+                                <td>0.826</td>
+                                <td>4.49</td>
+                            </tr>
+                        </tbody>
+                    </table>           
+                    </div>
+                    <figcaption style="text-align: center; width: 140%;">
+                        Ablation study over action space, history integration, and history organizing format. All variants are trained on split ABCD and tested on split D. 
+                        ''Disc." is short for discrete and ''Cont." represents continuous action space. Results are reported with the best-behaved model checkpoints within 5 epochs.
+                    </figcaption>
+                </div>  
+            <hr>
+            <p class="text", style="margin-top: 0%;">
+                <strong>&#128269;<i>Question 4</i></strong> &nbsp; How do different formulations affect the generalization and data efficiency for VLAs?
+    
+                <ul class="text" style="margin-top: 0%; padding-left: 3%;">
+                    <li style="margin-bottom: 0;"><strong>&#128204;<i>Finding 4</i></strong> &nbsp; Leveraging policy head for history fusion is the best in terms of generalization and data efficiency. </li>
+                </ul>
+            </p>
+            <hr>
+            <p class="text">
+                We empirically study and evaluate the generalization and data efficiency of various VLA formulations, aiming to provide practical insights for training high-performing VLAs. Specifically, we assess the generalization and data efficiency of different VLAs built with RoboVLMs by training models with different architectures and formulations on varying data scales using the CALVIN datasets. Our best model, based on the KosMos backbone and leveraging a policy head for history fusion, exhibits only a slight performance drop in zero-shot settings. In contrast, other formulations experience significant performance declines. This finding highlights that the model architecture significantly impacts generalization.
+            </p>
+                <d-figure id="fig-simpler_eval">
+                    <figure>
+                        <img data-zoomable="" draggable="false" src="static/img/calvin_generalization_ablation_abcd_d.png" alt="Generaliation CALVIN ABCD_D" style="width: 73%; margin-left: auto; margin-right: auto; display: block;">
+                        <img data-zoomable="" draggable="false" src="static/img/calvin_generalization_ablation_abc_d.png" alt="Generaliation CALVIN ABC_D" style="width: 73%; margin-left: auto; margin-right: auto; display: block;">
+                        <figcaption>
+                            Performance on <strong>CALVIN</strong> benchmark, all models are trained on split ABCD (top) / ABC (bottom), and evaluated on split D. 
+                            We report the success rates of consecutive five tasks (left axis) and the averaged task length (right axis), using the model checkpoints at 5-th epoch.
+                        </figcaption>
+                    </figure>
+                </d-figure>
+                <p class="text">
+                    For data efficienty, we observe trends similar to those for generalization. Our best model consistently achieves the highest performance when training data is scaled down, with a notably slower performance decline compared to other formulations. Additionally, comparisons of encoder-decoder VLAs at different scales reveal that larger models tend to be more data efficient.
+                </p>
+                <div id="tab:model_ensemble" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center;">VLA Architecture</th>
+                                    <th style="text-align: center;">Data Scale</th>
+                                    <th style="text-align: center;">1</th>
+                                    <th style="text-align: center;">2</th>
+                                    <th style="text-align: center;">3</th>
+                                    <th style="text-align: center;">4</th>
+                                    <th style="text-align: center;">5</th>
+                                    <th style="text-align: center;"><i>Avg. Len.</i></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Flamingo P.H. 3B</td>
+                                    <td>0.1x</td>
+                                    <td>0.120</td>
+                                    <td>0.007</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.000</td>
+                                    <td>0.13</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo P.H. 4B</td>
+                                    <td>0.1x</td>
+                                    <td>0.448</td>
+                                    <td>0.084</td>
+                                    <td>0.014</td>
+                                    <td>0.003</td>
+                                    <td>0.001</td>
+                                    <td>0.55</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo P.H. 9B</td>
+                                    <td>0.1x</td>
+                                    <td>0.547</td>
+                                    <td>0.190</td>
+                                    <td>0.067</td>
+                                    <td>0.020</td>
+                                    <td>0.003</td>
+                                    <td>0.83</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos Inter.</td>
+                                    <td>0.1x</td>
+                                    <td>0.938</td>
+                                    <td>0.701</td>
+                                    <td>0.445</td>
+                                    <td>0.270</td>
+                                    <td>0.140</td>
+                                    <td>2.49</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos P.H.</td>
+                                    <td>0.1x</td>
+                                    <td>0.958</td>
+                                    <td>0.684</td>
+                                    <td>0.431</td>
+                                    <td>0.270</td>
+                                    <td>0.176</td>
+                                    <td>2.52</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo P.H. 3B</td>
+                                    <td>1x</td>
+                                    <td>0.964</td>
+                                    <td>0.896</td>
+                                    <td>0.824</td>
+                                    <td>0.740</td>
+                                    <td>0.662</td>
+                                    <td>4.09</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo P.H. 4B</td>
+                                    <td>1x</td>
+                                    <td>0.936</td>
+                                    <td>0.847</td>
+                                    <td>0.750</td>
+                                    <td>0.667</td>
+                                    <td>0.586</td>
+                                    <td>3.79</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo P.H. 9B</td>
+                                    <td>1x</td>
+                                    <td>0.955</td>
+                                    <td>0.879</td>
+                                    <td>0.784</td>
+                                    <td>0.714</td>
+                                    <td>0.634</td>
+                                    <td>3.97</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos Inter.</td>
+                                    <td>1x</td>
+                                    <td>0.987</td>
+                                    <td>0.915</td>
+                                    <td>0.824</td>
+                                    <td>0.737</td>
+                                    <td>0.660</td>
+                                    <td>4.12</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos P.H.</td>
+                                    <td>1x</td>
+                                    <td>0.967</td>
+                                    <td>0.930</td>
+                                    <td>0.899</td>
+                                    <td>0.865</td>
+                                    <td>0.826</td>
+                                    <td>4.49</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo P.H. 3B</td>
+                                    <td>5x</td>
+                                    <td>0.971</td>
+                                    <td>0.916</td>
+                                    <td>0.856</td>
+                                    <td>0.794</td>
+                                    <td>0.716</td>
+                                    <td>4.21</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos Inter.</td>
+                                    <td>5x</td>
+                                    <td>0.989</td>
+                                    <td>0.940</td>
+                                    <td>0.892</td>
+                                    <td>0.842</td>
+                                    <td>0.795</td>
+                                    <td>4.46</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos P.H.</td>
+                                    <td>5x</td>
+                                    <td>0.968</td>
+                                    <td>0.937</td>
+                                    <td>0.903</td>
+                                    <td>0.872</td>
+                                    <td>0.830</td>
+                                    <td>4.51</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figcaption>
+                        The performance of VLAs implemented with different formulations and training data scales. 
+                        The results for 0.1x and 1x data are the best-behaved model checkpoints within 5 epochs, and the results for 5x data are the model performance at 1-st epoch.
+                        We name different implemented VLAs by their VLM backbones and the way of history modeling.
+                    </figcaption>
+                </div>
+
+        </div>
+
+        <div id="which" class="sub-section">
+            <h1 class="text">&#x1F449;Which VLM backbone is better for VLAs?</h1>
+            <hr>
+            <p class="text", style="margin-top: 0%;">
+                <strong>&#128269;<i>Question 5</i></strong> &nbsp; Which type of VLMs is most suitable for constructing VLAs?
+    
+                <ul class="text" style="margin-top: 0%; padding-left: 3%;">
+                    <li style="margin-bottom: 0;"><strong>&#128204;<i>Finding 5</i></strong> &nbsp; KosMos and Paligemma are distinctively better than other VLMs in terms of training VLAs. We hypothesize they benefit from sufficient vision-language pretrain. </li>
+                </ul>
+            </p>
+            <hr>
+            <p class="text">
+                We base our VLAs on a diverse selection of pre-trained large-scale vision-language backbones with varying architectures, training data scales, model sizes, and latent embeddings. Through all of our experiments, we found that KosMos and Paligemma demonstrate the distinctively better performance possibly benefitting from sufficient vision-language pre-training. But it is still unclear and an open problem how other factors affect the resulting VLA due to large diversity of VLM backbones including training data, architecture, model size, data scale, LLM backbones, training recipes, etc.
+            </p>
+                <div id="tab:model_ensemble" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center;">Backbone</th>
+                                    <th style="text-align: center;">#Token</th>
+                                    <th style="text-align: center;">Data Scale</th>
+                                    <th style="text-align: center;">Model Size</th>
+                                    <th style="text-align: center;">1</th>
+                                    <th style="text-align: center;">2</th>
+                                    <th style="text-align: center;">3</th>
+                                    <th style="text-align: center;">4</th>
+                                    <th style="text-align: center;">5</th>
+                                    <th style="text-align: center;">Avg. Len.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Flamingo</td>
+                                    <td>64</td>
+                                    <td>1B+</td>
+                                    <td>3B</td>
+                                    <td>0.692</td>
+                                    <td>0.418</td>
+                                    <td>0.241</td>
+                                    <td>0.14</td>
+                                    <td>0.074</td>
+                                    <td>1.57</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo</td>
+                                    <td>64</td>
+                                    <td>1B+</td>
+                                    <td>4B</td>
+                                    <td>0.689</td>
+                                    <td>0.456</td>
+                                    <td>0.281</td>
+                                    <td>0.181</td>
+                                    <td>0.107</td>
+                                    <td>1.71</td>
+                                </tr>
+                                <tr>
+                                    <td>Flamingo</td>
+                                    <td>64</td>
+                                    <td>1B+</td>
+                                    <td>9B</td>
+                                    <td>0.744</td>
+                                    <td>0.485</td>
+                                    <td>0.298</td>
+                                    <td>0.187</td>
+                                    <td>0.112</td>
+                                    <td>1.83</td>
+                                </tr>
+                                <tr>
+                                    <td>Qwen</td>
+                                    <td>256</td>
+                                    <td>350K</td>
+                                    <td>9B</td>
+                                    <td>0.221</td>
+                                    <td>0.062</td>
+                                    <td>0.014</td>
+                                    <td>0.002</td>
+                                    <td>0.000</td>
+                                    <td>0.30</td>
+                                </tr>
+                                <tr>
+                                    <td>MoonDream</td>
+                                    <td>576</td>
+                                    <td>UNK</td>
+                                    <td>3B</td>
+                                    <td>0.717</td>
+                                    <td>0.473</td>
+                                    <td>0.296</td>
+                                    <td>0.198</td>
+                                    <td>0.127</td>
+                                    <td>1.81</td>
+                                </tr>
+                                <tr>
+                                    <td>Uform</td>
+                                    <td>256</td>
+                                    <td>10M</td>
+                                    <td>1.3B</td>
+                                    <td>0.778</td>
+                                    <td>0.577</td>
+                                    <td>0.407</td>
+                                    <td>0.300</td>
+                                    <td>0.216</td>
+                                    <td>2.28</td>
+                                </tr>
+                                <tr>
+                                    <td>KosMos</td>
+                                    <td>64</td>
+                                    <td>90M</td>
+                                    <td>2B</td>
+                                    <td>0.922</td>
+                                    <td>0.807</td>
+                                    <td>0.701</td>
+                                    <td>0.615</td>
+                                    <td>0.549</td>
+                                    <td>3.59</td>
+                                </tr>
+                                <tr>
+                                    <td>Paligemma</td>
+                                    <td>256</td>
+                                    <td>10B</td>
+                                    <td>3B</td>
+                                    <td>0.931</td>
+                                    <td>0.836</td>
+                                    <td>0.752</td>
+                                    <td>0.683</td>
+                                    <td>0.616</td>
+                                    <td>3.82</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <figcaption>
+                        The performance of the built VLAs based on VLMs with different image token numbers and VL pre-train data scales. 
+                        <!-- The first three rows are flamingo backbones with encoder-decoder structures, the rest backbones are decoder-only structures.  -->
+                        Note that for VLMs with multi-stage training, the data scale refers to the data amount utilized for the final stage of fine-tuning. ''UNK'' denotes unknown.
+                    </figcaption>
+                </div>
+        </div>
+
+        <div id="when" class="sub-section">
+            <h1 class="text">&#x1F449;When Should We Leverage Cross-Embodiment Datasets?</h1>
+            <hr>
+            <p class="text", style="margin-top: 0%;">
+                <strong>&#128269;<i>Question 6</i></strong> &nbsp; What types of data from large-scale cross-embodiment datasets are the most beneficial for building VLAs and when should we use them?
+    
+                <ul class="text" style="margin-top: 0%; padding-left: 3%;">
+                    <li style="margin-bottom: 0;"><strong>&#128204;<i>Finding 6</i></strong> &nbsp; (1) Co-training with in-domain data, even from different tasks, proves beneficial for model performance; (2) Cross-embodiment data is more effective when utilized during the pre-training stage. </li>
+                </ul>
+            </p>
+            <hr>
+            <p class="text">
+                We conduct a series of experiments to investigate different strategies for using external large-scale cross-embodiment datasets, Open-X Embodiment. Results below demonstrate that cross-embodiment pre-training offers benefits to improve robustness as well as few-shot performance. While co-training with cross-embodiment data does not have significant improvements compared to using only in-domain data.
+            </p>
+            
+                <figure>
+                    <img data-zoomable="" draggable="false" src="static/img/cross_embodiment.png" alt="Cross Embodiment"  style="width: 85%; margin-left: auto; margin-right: auto; display: block;">
+                    <figcaption>
+                        Ablation studies for cross-embodiment training on <strong>SimpleEnv</strong>. We evaluate four different training recipes. On the <strong><i>WidowX+Bridge</i></strong> environments, we test (1) <i>Bridge Finetune</i> finetunes the VLA directly on the full Bridge datasets (tested tasks not included); (2) <i>OXE Pre-Train</i> pre-train the VLA on OXE dataset; (3) <i>Post-Train</i> train the OXE pre-trained VLA on Bridge datasets. On the <strong><i>Google Robot</i></strong> environments, we test (1) <i>RT-Partial Finetune</i> finetunes the VLA on tested RT tasks only; (2) <i>RT Finetune</i> finetunes the VLA on the full RT dataset (tested tasks included), along with (3) <i>OXE Pre-Train</i> and (4) <i>Post-Train</i> on tested RT tasks stage. -->
+                    </figcaption>
+                </figure>
+
+                <figure>
+                    <img data-zoomable="" draggable="false" src="static/img/calvin_nopretrain_comparison.png" alt="Cross Embodiment"  style="width: 60%; margin-left: auto; margin-right: auto; display: block;">
+                    <figcaption>
+                        The effect of cross-embodiment pre-training on OXE datasets for CALVIN few-shot learning.
+                    </figcaption>
+                </figure>
+        </div>
+
+        <div id="rollouts" class="sub-section">
+            <h1 class="text">Rollout Examples</h1>
+            <p class="text"><strong>SimplerEnv - WidowX+Bridge</strong></p>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/bridge/1.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/bridge/2.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%">
+                        <source src="static/videos/bridge/3.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/bridge/4.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/bridge/5.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/bridge/6.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%">
+                        <source src="static/videos/bridge/7.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/bridge/8.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+    
+            <p class="text"><strong>SimplerEnv - Google Robot</strong></p>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/1.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/2.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%">
+                        <source src="static/videos/google/3.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/4.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/5.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+            </div>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/6.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%">
+                        <source src="static/videos/google/7.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/8.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/9.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/google/10.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+
+            <p class="text"><strong>Real Robot: ByteDance Robot Benchmark</strong></p>
+            <!-- <p class="text">Basic</p> -->
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/basic_new/pick_place_green_mug_125_crop.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/basic_new/press_output_1_crop.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+            <p class="subtext">Unseen Distractor</p>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/unseen_distractor_new/close_drawer_182_crop.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/unseen_distractor_new/pick_place_left_knife_19_crop.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+            <p class="subtext">Unseen Background</p>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/unseen_background_new/pick_place_cucumber_143_crop.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/unseen_background_new/pick_place_eggplant_53_crop.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+            <p class="subtext">Unseen Target Object</p>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/unseen_target_new/pick_place_cucumber_151_crop.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/unseen_target_new/pick_place_potate_171_crop.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+            <p class="subtext">Novel Skill Description</p>
+            <div class="columns is-vcentered interpolation-panel"> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/novel_description_new/open_oven_31_crop.mp4" type="video/mp4"> 
+                    </video>
+                </div> 
+                <div class="column has-text-centered"> 
+                    <video autoplay="" controls="" muted="" loop="" playsinline="" width="100%"> 
+                        <source src="static/videos/real/novel_description_new/pick_place_right_knife_9_crop.mp4" type="video/mp4"> 
+                    </video> 
+                </div> 
+            </div>
+        </div>
+
+        <!-- <div id="conclusion" style="position: relative; margin-top: 40px; margin-bottom: 0px;"> -->
+            <!-- <h1 class="text" style="margin-top:0px; margin-bottom:10px">Conclusion</h1> -->
+            <!-- <h2 class="text" style="margin-top:0px; margin-bottom:10px">Conclusion</h2> -->
+            <!-- <p class="text abstract">
+                This empirical study mainly focuses on what matters in building Visual-Language Agents (VLAs) from a pre-trained Vision-Language Model (VLM). We first describe the key components for building a VLM-based VLA: <strong>What</strong> kind of VLM backbone to utilize, <strong>How</strong> to train the model to generate action, and <strong>When</strong> should we add cross-embodiment data into training stages. To answer these questions, we built a unified framework for a fair comparison of existing VLAs and designed a series of bottom-up systematic experiments. Empirically, we conduct extensive experiments across three simulators and 100 rollouts within 20 tasks in real-world scenarios and assess the performance, generalization capabilities, data efficiency, and the necessity of introducing cross-embodiment datasets for constructing RoboVLMs, and we provide actionable guidance for their development. Moreover, our optimally configured VLA built on RoboVLMs attains state-of-the-art performance in real-world experiments. We anticipate that our research will bolster the open-source community and expedite progress in the realms of vision-language learning and foundational models for robotics.
+            </p> -->
+        <!-- </div> -->
+         
+        <div id="ack" class="sub-section">
+            <h1 class="text">Acknowledgments</h1>
+            <p class="text">
+                We thank all the members of the robotics research team at ByteDance Research for their assistance in real-world data collection, setup design, robot maintenance, and experiments. The author Minghuan Liu is supported by the ByteDance Scholarship.
+            </p>
+        </div>
+
+        </d-article>
+        <d-appendix>
+            <h3>BibTeX</h3>
+            <p class="bibtex">
+                @article{li2023generalist,<br>
+                &nbsp;&nbsp;title={Towards Generalist Robot Policies: What Matters in Building Vision-Language-Action Models},<br>
+                &nbsp;&nbsp;author={Li, Xinghang and Li, Peiyan and Liu, Minghuan and Wang, Dong and Liu, Jirong and Kang, Bingyi and Ma, Xiao and Kong, Tao and Zhang, Hanbo and Liu, Huaping},<br>
+                &nbsp;&nbsp;journal={arXiv preprint arXiv:2412.xxxxx},<br>
+                &nbsp;&nbsp;year={2024}<br>
+                }
+            </p>
+
+            <d-footnote-list></d-footnote-list>
+            <d-citation-list></d-citation-list>
+        </d-appendix>   
+        <!-- bibliography will be inlined during Distill pipeline's pre-rendering -->
+        <d-bibliography src="bibliography.bib"></d-bibliography>
+        <script src="./static/js/nav-bar.js"></script>
+    </body>
+</html>
